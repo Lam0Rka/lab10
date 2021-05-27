@@ -15,39 +15,52 @@ Vagrant-это инструмент для создания и управлен�
 - [x] 2. Выполнить инструкцию учебного материала
 - [x] 3. Составить отчет и отправить ссылку личным сообщением в **Slack**
 
-## Tutorial
- Устанавливаем значение переменных окружения
- Указываем имя пользователя Github
- Указываем используемый пакетный менеджер 
+
+
 ```sh
-$ export GITHUB_USERNAME=<имя_пользователя>
-$ export PACKAGE_MANAGER=<пакетный_менеджер>
+$ export GITHUB_USERNAME= пишу свое имя пользователя
+$ export PACKAGE_MANAGER= пишу свой пакадж менетджер
 ```
-Переходим в рабочую директорию Устанавливаем vagrant
+
 ```sh
 $ cd ${GITHUB_USERNAME}/workspace
-$ ${PACKAGE_MANAGER} install vagrant
+$ ${PACKAGE_MANAGER} install vagrant ##установка vagrant из менеджера пакетов
 ```
-Дополнительно: Если использовать vagrant появится справка со всеми доступными подкомандами. Можно запустить  vagrant  флагом-h, чтобы вывести справку об этой конкретной команде. Например, попробуйте запустить vagrant init-h. Справка выведет краткое описание того, что делает команда, в одном предложении, а также список всех флагов, которые принимает команда.
-
-6 Выводим версию скаченного vagrant
-7 Создаем новую виртуальную машину
-8 Выводим содержимое Vagrantfile
 
 ```sh
 $ vagrant version
-$ vagrant init bento/ubuntu-19.10
-$ less Vagrantfile
+
+Installed Version: 2.2.6
+
+Vagrant was unable to check for the latest version of Vagrant.
+Please check manually at https://www.vagrantup.com
+
+
+$ vagrant init bento/ubuntu-19.10 ##инициализация виртуальной машины на ubuntu
+
+ `Vagrantfile` has been placed in this directory. You are now
+ready to `vagrant up` your first virtual environment! Please read
+the comments in the Vagrantfile as well as documentation on
+`vagrantup.com` for more information on using Vagrant.
+
+
+
+$ less Vagrantfile ##сгенерируется файл настроек виртуальной машины
+Создаем новый Vagrantfile, перезаписываем изначальный (флаг -f), находящийся в текущем пути. Причем информация в нем будет в минимальном объеме (флаг -m)
 $ vagrant init -f -m bento/ubuntu-19.10
+
+A `Vagrantfile` has been placed in this directory. You are now
+ready to `vagrant up` your first virtual environment! Please read
+the comments in the Vagrantfile as well as documentation on
+`vagrantup.com` for more information on using Vagrant.
 ```
- Создаем директорию shared
 
 ```sh
 $ mkdir shared
 ```
- В файл Vagrantfile записываем комманды для запуска скрипта 
+
 ```sh
-$ cat > Vagrantfile <<EOF
+$ cat > Vagrantfile <<EOF ##добавление конфигурации
 \$script = <<-SCRIPT
 sudo apt install docker.io -y
 sudo docker pull fastide/ubuntu:19.04
@@ -60,9 +73,11 @@ sudo chown -R developer /home/developer
 SCRIPT
 EOF
 ```
-В файл Vagrantfile записываем конфигурацию для виртуальной машины
- vagrant-vbguest - это плагин, который автоматически обновляет гостевые дополнения VirtualBox
+
 ```sh
+# В файл Vagrantfile записываем конфигурацию для виртуальной машины
+# vagrant-vbguest - это плагин, который автоматически обновляет гостевые дополнения VirtualBox
+
 $ cat >> Vagrantfile <<EOF
 
 Vagrant.configure("2") do |config|
@@ -70,52 +85,45 @@ Vagrant.configure("2") do |config|
   config.vagrant.plugins = ["vagrant-vbguest"]
 EOF
 ```
-Продолжаем конфигурацию для виртуальной машины
+
 ```sh
+# Продолжаем конфигурацию для виртуальной машины:
 $ cat >> Vagrantfile <<EOF
 
-  config.vm.box = "bento/ubuntu-19.10"
-  config.vm.network "public_network"
-  config.vm.synced_folder('shared', '/vagrant', type: 'rsync')
+  config.vm.box = "bento/ubuntu-19.10"                              # Указываем версию виртуальной машины: ubuntu-19.10
+  config.vm.network "public_network"                                # Указываем настройки сети: public_network
+  config.vm.synced_folder('shared', '/vagrant', type: 'rsync')      # Указываем связующие директории: 'shared', '/vagrant', type: 'rsync'
 
-  config.vm.provider "virtualbox" do |vb|
-    vb.gui = true
-    vb.memory = "2048"
+  config.vm.provider "virtualbox" do |vb|                           # Указываем тип виртуальной машины: virtualbox
+    vb.gui = true                                                   # Указываем, что используется графический интерфейс: vb.gui = true 
+    vb.memory = "2048"                                              # Указываем, сколько выделяем оперативной памяти под виртуальную машину: 2048МБ 
   end
 
-  config.vm.provision "shell", inline: \$script, privileged: true
+  config.vm.provision "shell", inline: \$script, privileged: true   # config.vm.provision "shell" - задает встроенную команду оболочки для выполнения на удаленном компьютере
 
-  config.ssh.extra_args = "-tt"
+  config.ssh.extra_args = "-tt"                                     # config.ssh.extra_args - значение настроек передается непосредственно в исполняемый файл ssh#
 
 end
 EOF
 ```
 
- Проверка корректности файла Vagrantfile
- Просмотрим список вируальных машин и их статусы
- Запуск виртуальной машины 
- Информация о проброске портов
- Подключение по ssh к запущенной виртуальной машине
- Посмотреть список сохранённых состояний виртальной машины
- Остановить виртуальную машину
- Востановить состояние виртуальной машины по снимку
-
 ```sh
-$ vagrant validate
+# проверка корректности файла Vagrantfile
+$ vagrant validate ##валидация
 
+$ vagrant status ##проверка статуса
+$ vagrant up # --provider virtualbox ##запуск виртуальной машины
+$ vagrant port ##просмотр порта
 $ vagrant status
-$ vagrant up # --provider virtualbox
-$ vagrant port
-$ vagrant status
-$ vagrant ssh
+$ vagrant ssh ##подключение к виртуальной машине через ssh
 
+$ vagrant snapshot list ##просмотр снимков виртуальных машин
+$ vagrant snapshot push ##добавление снимка виртуальной машины
 $ vagrant snapshot list
-$ vagrant snapshot push
-$ vagrant snapshot list
-$ vagrant halt
-$ vagrant snapshot pop
+$ vagrant halt ##выключение виртуальной машины
+$ vagrant snapshot pop ##открытие снимка виртуальной машины
 ```
-Настраиваем Vagrant для работы с VMware
+
 ```ruby
   config.vm.provider :vmware_esxi do |esxi|
 
@@ -135,9 +143,22 @@ $ vagrant snapshot pop
 ```
 
 ```sh
-$ vagrant plugin install vagrant-vmware-esxi
-$ vagrant plugin list
-$ vagrant up --provider=vmware_esxi
+$ vagrant plugin install vagrant-vmware-esxi ##установка плагина vmware
+$ vagrant plugin list ##просмотр плагинов
+$ vagrant up --provider=vmware_esxi ##запуск виртуальной машины с указанием провайдера
+```
+
+## Report
+
+```sh
+$ cd ~/workspace/
+$ export LAB_NUMBER=10
+$ git clone https://github.com/tp-labs/lab${LAB_NUMBER}.git tasks/lab${LAB_NUMBER}
+$ mkdir reports/lab${LAB_NUMBER}
+$ cp tasks/lab${LAB_NUMBER}/README.md reports/lab${LAB_NUMBER}/REPORT.md
+$ cd reports/lab${LAB_NUMBER}
+$ edit REPORT.md
+$ gist REPORT.md
 ```
 
 ## Links
@@ -150,4 +171,3 @@ $ vagrant up --provider=vmware_esxi
 
 ```
 Copyright (c) 2015-2021 The ISC Authors
-```
